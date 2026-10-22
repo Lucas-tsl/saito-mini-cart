@@ -202,3 +202,10 @@
 .wc-block-mini-cart__title + .saito-mc-slot {
 	margin-top: 32px;
 }
+
+/* Shortcode de la barre dans le mini-panier : mêmes marges latérales que le
+   reste du tiroir (16px), comme la barre insérée automatiquement. */
+.wc-block-components-drawer .saito-mc-progress--shortcode {
+	margin-right: 16px;
+	margin-left: 16px;
+}
