@@ -27,13 +27,20 @@ function saito_mc_mini_cart_shortcodes( $content ) {
 	if ( false === strpos( $content, '[saito_mini_cart_' ) ) {
 		return $content;
 	}
-	return preg_replace_callback(
-		'#(?:<p>\s*)?\[saito_mini_cart_(progress|recommendations)\s*/?\](?:\s*</p>)?#',
+	// Le paragraphe qui entoure le shortcode est retiré en entier, balise
+	// d'ouverture comprise (WordPress lui ajoute une classe) : un <p> laissé
+	// ouvert rend le bloc mal formé, et WordPress renonce alors à poser côté
+	// serveur l'état initial du tiroir (fermé) — il s'affichait ouvert à
+	// chaque chargement de page, puis se refermait.
+	$result = preg_replace_callback(
+		'#<p\b[^>]*>\s*\[saito_mini_cart_(progress|recommendations)\s*/?\]\s*</p>|\[saito_mini_cart_(progress|recommendations)\s*/?\]#',
 		function ( $matches ) {
-			return 'progress' === $matches[1] ? saito_mc_progress_shortcode() : saito_mc_recommendations_shortcode();
+			$name = '' !== $matches[1] ? $matches[1] : $matches[2];
+			return 'progress' === $name ? saito_mc_progress_shortcode() : saito_mc_recommendations_shortcode();
 		},
 		$content
 	);
+	return null === $result ? $content : $result;
 }
 add_action( 'rest_api_init', 'saito_mc_register_rest_route' );
 

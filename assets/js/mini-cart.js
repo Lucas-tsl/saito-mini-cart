@@ -68,9 +68,30 @@
 		return document.querySelector( '.wc-block-components-drawer .wp-block-woocommerce-filled-mini-cart-contents-block' );
 	}
 
+	// Le tiroir du mini-panier en blocs est piloté par l'Interactivity API de
+	// WordPress : le modifier avant qu'il ait été ouvert une première fois
+	// (pendant son hydratation, au chargement de chaque page) le fait
+	// réafficher dans son état de départ, ouvert, puis se refermer — un
+	// clignotement à chaque page. On n'y touche donc qu'une fois ouvert.
+	var drawerReady = false;
+	function drawerIsOpen() {
+		var overlay = document.querySelector( '.wc-block-components-drawer__screen-overlay' );
+		var drawer = document.querySelector( '.wc-block-components-drawer' );
+		return !! overlay && !! drawer && ! overlay.classList.contains( 'wc-block-components-drawer__screen-overlay--is-hidden' ) && 'true' !== drawer.getAttribute( 'aria-hidden' );
+	}
+	function canTouch( slot ) {
+		if ( ! slot.closest( '.wc-block-components-drawer' ) ) {
+			return true;
+		}
+		if ( ! drawerReady && drawerIsOpen() ) {
+			drawerReady = true;
+		}
+		return drawerReady;
+	}
+
 	function placeInDrawer() {
 		var contents = drawerContents();
-		if ( ! contents ) {
+		if ( ! contents || ! canTouch( contents ) ) {
 			return;
 		}
 		// Dans la liste des produits, et non juste avant : le titre du
@@ -110,7 +131,9 @@
 		placeInDrawer();
 		var slots = document.querySelectorAll( '[data-saito-mc]' );
 		for ( var i = 0; i < slots.length; i++ ) {
-			fill( slots[ i ], slots[ i ].getAttribute( 'data-saito-mc' ) );
+			if ( canTouch( slots[ i ] ) ) {
+				fill( slots[ i ], slots[ i ].getAttribute( 'data-saito-mc' ) );
+			}
 		}
 	}
 
